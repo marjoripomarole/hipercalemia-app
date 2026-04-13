@@ -60,7 +60,7 @@ const nodes = {
     title: "Beco sem saída: esperar custou tempo",
     icon: AlertTriangle,
     scene:
-      "Enquanto a equipe aguarda a nova coleta, o paciente piora. Ele fica mais sintomático e desenvolve maior instabilidade elétrica, que poderia ter sido reconhecida antes com ECG e monitorização.",
+      "A equipe espera. O paciente espera. O potássio não espera. Dez minutos depois, o monitor apita — ondas T cada vez mais apiculadas aparecem no traçado. O técnico de enfermagem chama: \"Doutor, ele está piorando.\" Um ECG feito agora teria mostrado isso antes.",
     prompt: "O que fazer a partir desse aprendizado?",
     options: [
       {
@@ -78,7 +78,7 @@ const nodes = {
     title: "Beco sem saída: raciocínio incompleto",
     icon: AlertTriangle,
     scene:
-      "Suspender os remédios foi uma boa intuição, mas o paciente continuou sem avaliação imediata do risco cardíaco. Revisar a causa sem olhar o ECG faz você perder a urgência do caso.",
+      "A equipe debate animadamente a losartana enquanto o paciente continua no maca sem monitor. De repente o residente olha pro lado e pergunta: \"Alguém pediu o ECG?\" Silêncio constrangedor. O coração estava sob risco todo esse tempo.",
     prompt: "Como corrigir a rota?",
     options: [
       {
@@ -131,7 +131,7 @@ const nodes = {
     title: "Beco sem saída: você chamou de pseudo o que era grave",
     icon: AlertTriangle,
     scene:
-      "Ao assumir pseudohipercalemia, a equipe atrasa o tratamento. O traçado elétrico piora e o paciente fica mais perto de uma arritmia ameaçadora à vida.",
+      "\"Deve ser erro de coleta\" — e a equipe segue em frente. Dois minutos depois, o monitor dispara. O QRS alargou mais. O residente entra em pânico e grita: \"Chama o cardiologista!\" A amostra não estava hemolisada. Nunca foi pseudo.",
     prompt: "Qual correção salva o caso?",
     options: [
       {
@@ -149,7 +149,7 @@ const nodes = {
     title: "Beco sem saída: foco no sintoma errado",
     icon: AlertTriangle,
     scene:
-      "A equipe se fixa na fraqueza muscular e subestima o ECG. Enquanto isso, a condução elétrica cardíaca continua piorando.",
+      "A equipe pede avaliação da neurologia para a fraqueza. Enquanto isso, o monitor apita mansinho ao fundo — ninguém olha. O QRS já está largo demais. A fraqueza muscular era consequência; o coração era a urgência.",
     prompt: "Como retomar o raciocínio correto?",
     options: [
       {
@@ -202,7 +202,7 @@ const nodes = {
     title: "Beco sem saída: conduta certa, hora errada",
     icon: AlertTriangle,
     scene:
-      "A restrição dietética pode fazer parte do manejo crônico, mas não atua na urgência elétrica do momento. O paciente segue sob risco de arritmia.",
+      "A nutricionista é acionada. O cardápio sem banana está sendo preparado. Enquanto isso, o monitor apita — o coração não recebeu nenhuma proteção. A dieta é importante, mas não salva ninguém em fibrilação ventricular.",
     prompt: "Como corrigir a prioridade?",
     options: [
       {
@@ -220,7 +220,7 @@ const nodes = {
     title: "Beco sem saída: você esperou demais",
     icon: AlertTriangle,
     scene:
-      "A consulta especializada é útil, mas o paciente precisava de intervenção imediata. O ECG não espera a burocracia do plantão.",
+      "O telefone toca na nefrologia. Toca de novo. O nefrologista está em outra interconsulta. Enquanto isso, o monitor dispara — QRS alargando, ritmo instável. O residente olha pro attending com olhos arregalados. A burocracia do plantão não pausa a hipercalemia.",
     prompt: "Qual medida deveria ter sido iniciada já?",
     options: [
       {
@@ -273,7 +273,7 @@ const nodes = {
     title: "Beco sem saída: você tratou outro problema",
     icon: AlertTriangle,
     scene:
-      "A equipe desviou o foco para uma causa que não está sustentada pelo caso. Enquanto isso, o potássio segue alto e o risco persiste.",
+      "Amoxicilina prescrita. O farmacêutico dispensa. O soro com antibiótico começa a correr. O K⁺ continua em 6,7. O monitor apita. O residente pergunta: \"Mas cadê o foco infeccioso?\" Não tinha. E o potássio não caiu um milímetro.",
     prompt: "Qual era a meta fisiológica correta?",
     options: [
       {
@@ -291,7 +291,7 @@ const nodes = {
     title: "Beco sem saída: suporte sem estratégia",
     icon: AlertTriangle,
     scene:
-      "Hidratar pode até entrar no manejo em alguns cenários, mas sozinho não corrige a hipercalemia grave. O caso continua sem resposta efetiva.",
+      "O soro fisiológico pinga. Pinga. Pinga. O K⁺ continua em 6,7. O monitor apita de novo. \"Tá hidratado, pelo menos\", alguém murmura. O coração discorda — e mostra isso com mais um alargamento do QRS.",
     prompt: "Como voltar ao objetivo certo?",
     options: [
       {
@@ -344,7 +344,7 @@ const nodes = {
     title: "Beco sem saída: você perdeu o diagnóstico",
     icon: AlertTriangle,
     scene:
-      "Ao chamar o caso de pseudohipercalemia, você apaga os dados mais importantes do caso: DRC, remédios implicados, exame sem hemólise e ECG alterado.",
+      "\"Pseudohipercalemia\" é escrito no prontuário com confiança. O interno vai tomar café. O monitor continua apitando na sala. A enfermeira entra correndo: \"O senhor da 3 não está bem.\" Era o mesmo paciente. O ECG estava alterado esse tempo todo.",
     prompt: "Quer reavaliar o diagnóstico final?",
     options: [
       {
@@ -362,7 +362,7 @@ const nodes = {
     title: "Beco sem saída: explicação simplista demais",
     icon: AlertTriangle,
     scene:
-      "Focar só na dieta ignora o fator decisivo do caso: incapacidade de excretar adequadamente o potássio, agravada por medicações e já com repercussão cardíaca estabelecida.",
+      "\"Comeu banana demais\" — e o diagnóstico é encerrado. O residente anota no prontuário: \"orientação dietética realizada\". O attending franze a testa e olha pro ECG. Tem DRC, tem losartana, tem espironolactona, tem QRS largo. Isso não é banana.",
     prompt: "Como fechar o diagnóstico de forma completa?",
     options: [
       {
