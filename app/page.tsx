@@ -1,5 +1,6 @@
-import HyperkalemiaGame from "@/components/HyperkalemiaGame";
+import GameEngine from "@/components/GameEngine";
+import hipercalemiaCase from "@/cases/hipercalemia";
 
 export default function Home() {
-  return <HyperkalemiaGame />;
+  return <GameEngine caseData={hipercalemiaCase} />;
 }
