@@ -1,7 +1,7 @@
 "use client";
 // @ts-nocheck
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   XCircle,
   Stethoscope,
+  Activity,
 } from "lucide-react";
 
 const nodes = {
@@ -164,7 +165,7 @@ const nodes = {
     id: "stabilize",
     kind: "decision",
     title: "Primeira decisão terapêutica",
-    icon: AlertTriangle,
+    icon: Activity,
     scene:
       "Você já reconheceu uma hipercalemia com alterações no ECG. Agora precisa escolher a intervenção inicial que mais reduz o risco imediato de morte.",
     prompt: "Qual é a melhor primeira medida?",
@@ -451,6 +452,37 @@ export default function HyperkalemiaRPGGame() {
     }, 0);
   }, [answers]);
 
+  const stepNumber = scoredDecisionIds.indexOf(currentNodeId) + 1;
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      const key = e.key.toLowerCase();
+
+      if (!revealed) {
+        const idx = ["a", "b", "c"].indexOf(key);
+        if (idx !== -1 && idx < currentNode.options.length) {
+          setSelectedOptionId(currentNode.options[idx].id);
+          return;
+        }
+      }
+
+      if (e.key === "Enter") {
+        if (!revealed && selectedOptionId) {
+          if (currentNode.kind === "decision") {
+            setAnswers((prev) => ({ ...prev, [currentNodeId]: selectedOptionId }));
+          }
+          setRevealed(true);
+        } else if (revealed && selectedOption) {
+          advance();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [revealed, selectedOptionId, currentNode, currentNodeId, selectedOption]);
+
   const choose = (optionId) => {
     if (revealed) return;
     setSelectedOptionId(optionId);
@@ -531,12 +563,12 @@ export default function HyperkalemiaRPGGame() {
           <Card className="rounded-[28px] border-0 bg-white shadow-sm">
             <CardContent className="p-4 md:p-5">
               <div className="flex flex-wrap gap-2">
-                {pathPreview.map((title, index) => (
+                {path.slice(-6).map((nodeId, index, arr) => (
                   <div
-                    key={`${title}-${index}`}
-                    className={`rounded-full px-3 py-2 text-sm ${index === pathPreview.length - 1 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
+                    key={`${nodeId}-${index}`}
+                    className={`rounded-full px-3 py-2 text-sm ${index === arr.length - 1 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
                   >
-                    {title}
+                    {nodes[nodeId].title}
                   </div>
                 ))}
               </div>
@@ -551,7 +583,9 @@ export default function HyperkalemiaRPGGame() {
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm text-slate-500 mb-2">Nó atual da árvore</div>
+                    {stepNumber > 0 && (
+                      <div className="text-sm text-slate-500 mb-1">Etapa {stepNumber} de {scoredDecisionIds.length}</div>
+                    )}
                     <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">{currentNode.title}</h2>
                   </div>
                 </div>
@@ -582,21 +616,19 @@ export default function HyperkalemiaRPGGame() {
                     <button
                       key={option.id}
                       onClick={() => choose(option.id)}
-                      className={`group text-left rounded-3xl border px-5 py-5 transition-all ${
-                        isSelected ? "border-slate-900 bg-slate-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70"
-                      } ${showSuccess ? "ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50" : ""} ${showFailure ? "ring-2 ring-rose-500 border-rose-300 bg-rose-50" : ""}`}
+                      className={`group text-left rounded-3xl border px-5 py-5 transition-all ${isSelected ? "border-slate-900 bg-slate-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70"
+                        } ${showSuccess ? "ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50" : ""} ${showFailure ? "ring-2 ring-rose-500 border-rose-300 bg-rose-50" : ""}`}
                     >
                       <div className="flex items-start gap-4">
                         <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
-                            showSuccess
-                              ? "border-emerald-500 bg-emerald-100 text-emerald-700"
-                              : showFailure
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${showSuccess
+                            ? "border-emerald-500 bg-emerald-100 text-emerald-700"
+                            : showFailure
                               ? "border-rose-500 bg-rose-100 text-rose-700"
                               : isSelected
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-300 bg-white text-slate-500 group-hover:border-slate-400"
-                          }`}
+                                ? "border-slate-900 bg-slate-900 text-white"
+                                : "border-slate-300 bg-white text-slate-500 group-hover:border-slate-400"
+                            }`}
                         >
                           {showSuccess ? (
                             <CheckCircle2 className="w-4 h-4" />
@@ -616,6 +648,7 @@ export default function HyperkalemiaRPGGame() {
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
                 <div className="text-sm text-slate-500">
                   {selectedOptionId ? "Resposta selecionada. Revele a consequência clínica antes de avançar." : "Escolha uma opção para continuar."}
+                  <span className="ml-2 text-slate-400 hidden sm:inline">· Use A/B/C e Enter</span>
                 </div>
                 <div className="flex gap-3 flex-wrap">
                   <Button onClick={reveal} disabled={!selectedOptionId || revealed} className="rounded-2xl h-11 px-5">
@@ -625,8 +658,8 @@ export default function HyperkalemiaRPGGame() {
                     {selectedOption?.nextId === "success"
                       ? "Fechar diagnóstico"
                       : currentNode.kind === "dead_end"
-                      ? "Voltar para a árvore"
-                      : "Seguir caminho"}
+                        ? "Voltar para a árvore"
+                        : "Seguir caminho"}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
@@ -641,13 +674,12 @@ export default function HyperkalemiaRPGGame() {
                     </CardContent>
                   </Card>
                   <Card
-                    className={`rounded-3xl border-0 shadow-none ${
-                      selectedOption.nextId === "success"
-                        ? "bg-emerald-900 text-white"
-                        : nodes[selectedOption.nextId].kind === "dead_end"
+                    className={`rounded-3xl border-0 shadow-none ${selectedOption.nextId === "success"
+                      ? "bg-emerald-900 text-white"
+                      : nodes[selectedOption.nextId].kind === "dead_end"
                         ? "bg-rose-900 text-white"
                         : "bg-slate-900 text-white"
-                    }`}
+                      }`}
                   >
                     <CardContent className="p-6">
                       <div className="text-sm font-medium text-slate-300 mb-2">Para onde esse caminho leva</div>
