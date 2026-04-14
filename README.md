@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hipercalemia — Caso Clínico Interativo
 
-## Getting Started
+An interactive clinical decision-making game built for medical education. Students work through a real-world hyperkalemia emergency in a retro 8-bit RPG aesthetic, making diagnostic and therapeutic choices at each step.
 
-First, run the development server:
+## What it does
+
+The app presents a branching decision-tree case: a 68-year-old male with CKD, diabetes, hypertension, and potassium-retaining medications arrives at the ER with muscle weakness, nausea, and palpitations. Students must:
+
+1. **Triage the situation** — decide the correct first steps (ECG, labs, monitoring)
+2. **Classify severity** — interpret ECG changes and repeat labs
+3. **Stabilize the patient** — choose the right cardiac membrane stabilizer
+4. **Reduce serum potassium** — select the correct shift therapies
+5. **Close the diagnosis** — integrate the full clinical picture
+
+Wrong choices lead to dramatic "dead-end" scenes that show the clinical consequences, then redirect back to the decision point. Correct choices advance the case. A score bar (HP) tracks how many key decisions were made correctly.
+
+## Features
+
+- Branching narrative with scored decision nodes
+- Structured patient chart (vitals, labs, ECG, medications) shown alongside each scene
+- Keyboard shortcuts: `A`/`B`/`C` to select options, `Enter` to confirm/advance
+- Breadcrumb trail showing the path taken through the case
+- Immediate feedback explaining why each choice is right or wrong
+- Restart at any time to replay with different choices
+
+## Stack
+
+- [Next.js](https://nextjs.org) (App Router)
+- [Tailwind CSS](https://tailwindcss.com)
+- [shadcn/ui](https://ui.shadcn.com) components
+- [Lucide React](https://lucide.dev) icons
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Adding cases
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The game engine (`components/GameEngine.jsx`) is decoupled from the case data. To add a new clinical case, create a file in `cases/` following the structure in `cases/hipercalemia.js` and pass it as a prop to `<GameEngine caseData={yourCase} />`.
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deployed automatically to [hipercalemia-app.vercel.app](https://hipercalemia-app.vercel.app) on every push to `main` via Vercel's GitHub integration.
