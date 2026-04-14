@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   RotateCcw,
   ChevronRight,
@@ -15,6 +12,11 @@ import {
   BrainCircuit,
   Stethoscope,
   Activity,
+  Skull,
+  Shield,
+  Swords,
+  ClipboardList,
+  FileHeart,
 } from "lucide-react";
 
 const ICONS = {
@@ -27,41 +29,123 @@ const ICONS = {
   Activity,
 };
 
-function ScoreBadge({ score, total }) {
+/* ═══════════════════════════════════════════
+   SUB-COMPONENTS
+   ═══════════════════════════════════════════ */
+
+function HpBar({ score, total }) {
   const pct = Math.round((score / total) * 100);
+  const barColor = pct >= 60 ? "bg-emerald-500" : pct >= 30 ? "bg-amber-500" : "bg-red-500";
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-      <div className="flex items-center justify-between gap-4 mb-2">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-slate-500">Decisões certas</div>
-          <div className="text-2xl font-semibold text-slate-900">{score}/{total}</div>
-        </div>
-        <div className="text-sm font-medium text-slate-500">{pct}%</div>
+    <div className="flex items-center gap-2.5">
+      <div className="font-pixel text-[9px] text-emerald-800 whitespace-nowrap">
+        <Shield className="w-3.5 h-3.5 inline mr-1 mb-0.5 text-emerald-700" />
+        HP
       </div>
-      <Progress value={pct} className="h-2.5" />
+      <div className="w-28 h-4 bg-amber-100 border-2 border-amber-800/40 relative overflow-hidden">
+        <div
+          className={`h-full ${barColor} transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="font-pixel text-[7px] text-amber-950 drop-shadow-[0_1px_0px_rgba(255,255,255,0.4)]">
+            {score}/{total}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
 
 function KindBadge({ kind }) {
-  const styles = {
-    decision: "bg-slate-100 text-slate-700",
-    dead_end: "bg-rose-100 text-rose-700",
-    success: "bg-emerald-100 text-emerald-700",
+  const config = {
+    decision: {
+      bg: "bg-sky-100 border-sky-700/40",
+      text: "text-sky-800",
+      label: "⚔ Decisão clínica",
+    },
+    dead_end: {
+      bg: "bg-red-100 border-red-700/40",
+      text: "text-red-800",
+      label: "💀 Beco sem saída",
+    },
+    success: {
+      bg: "bg-emerald-100 border-emerald-700/40",
+      text: "text-emerald-800",
+      label: "✦ Diagnóstico fechado",
+    },
   };
 
-  const labels = {
-    decision: "Decisão clínica",
-    dead_end: "Beco sem saída",
-    success: "Diagnóstico fechado",
-  };
+  const c = config[kind];
 
   return (
-    <div className={`inline-flex items-center rounded-full px-3 py-1 text-sm ${styles[kind]}`}>
-      {labels[kind]}
+    <div className={`inline-flex items-center border-2 px-2.5 py-1 font-pixel text-[8px] ${c.bg} ${c.text}`}>
+      {c.label}
     </div>
   );
 }
+
+const SECTION_LABELS = {
+  paciente: { label: "PACIENTE", icon: "user" },
+  "história": { label: "HISTÓRIA", icon: "history" },
+  "medicações": { label: "MEDICAÇÕES", icon: "meds" },
+  sinaisVitais: { label: "SINAIS VITAIS", icon: "vitals" },
+  "laboratório": { label: "LABORATÓRIO", icon: "lab" },
+  ecg: { label: "ECG", icon: "ecg" },
+};
+
+function LabPanel({ data }) {
+  if (!data) return null;
+
+  return (
+    <div className="rpg-border-cyan bg-[#f0f7fa] p-3">
+      <div className="flex items-center gap-2 mb-3">
+        <ClipboardList className="w-3.5 h-3.5 text-sky-700" />
+        <div className="font-pixel text-[8px] text-sky-700 uppercase tracking-widest">
+          Prontuário
+        </div>
+      </div>
+      <div className="space-y-2.5">
+        {Object.entries(data).map(([sectionKey, sectionData]) => {
+          const sectionInfo = SECTION_LABELS[sectionKey] || { label: sectionKey.toUpperCase() };
+          return (
+            <div key={sectionKey}>
+              <div className="font-pixel text-[6px] text-sky-600/70 uppercase tracking-[0.15em] mb-1 border-b border-sky-300/30 pb-0.5">
+                {sectionInfo.label}
+              </div>
+              <div className="space-y-0.5">
+                {Object.entries(sectionData).map(([key, value]) => {
+                  const isStructured = typeof value === "object" && value.valor;
+                  const displayValue = isStructured ? value.valor : value;
+                  const alert = isStructured ? value.alerta : null;
+
+                  return (
+                    <div key={key} className="flex items-center justify-between gap-2 px-1.5 py-0.5 text-xs font-sans">
+                      <span className="text-[#3d2e1e]/70 shrink-0">{key}</span>
+                      <span className={`text-right font-medium ${
+                        alert === "alto" ? "text-red-700" :
+                        alert === "normal" ? "text-emerald-700" :
+                        "text-[#3d2e1e]"
+                      }`}>
+                        {alert === "alto" && "⚠ "}
+                        {displayValue}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   MAIN GAME ENGINE
+   ═══════════════════════════════════════════ */
 
 export default function GameEngine({ caseData }) {
   const { meta, initialNodeId, scoredDecisionIds, nodes } = caseData;
@@ -155,173 +239,273 @@ export default function GameEngine({ caseData }) {
   };
 
   const headerTone = {
-    decision: "bg-slate-50/80 border-slate-100",
-    dead_end: "bg-rose-50 border-rose-100",
-    success: "bg-emerald-50 border-emerald-100",
+    decision: "bg-sky-50 border-sky-300/60",
+    dead_end: "bg-red-50 border-red-300/60",
+    success: "bg-emerald-50 border-emerald-300/60",
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 via-white to-slate-100 text-slate-900">
-      <div className="max-w-5xl mx-auto px-4 py-6 md:px-6 md:py-8">
-        <div className="grid gap-6">
-          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                <div className="max-w-3xl">
-                  <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 mb-4">
-                    {meta.badge}
-                  </div>
-                  <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
-                    {meta.title}
-                  </h1>
-                  <p className="mt-4 text-base md:text-lg leading-8 text-slate-600">
-                    {meta.description}
-                  </p>
-                </div>
+    <div className="h-screen overflow-hidden bg-[#f0e6d3] text-[#2a1f14] relative scanlines">
 
-                <div className="w-full lg:w-[320px] space-y-3">
-                  <Button variant="outline" onClick={reset} className="w-full rounded-2xl h-11 text-base">
-                    <RotateCcw className="w-4 h-4 mr-2" /> Recomeçar
-                  </Button>
-                  <ScoreBadge score={score} total={scoredDecisionIds.length} />
+      {/* Subtle pixel grid */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(139,111,71,0.4) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(139,111,71,0.4) 1px, transparent 1px)
+          `,
+          backgroundSize: "16px 16px",
+        }}
+      />
+
+      <div className="relative z-10 h-full max-w-5xl mx-auto px-3 py-3 md:px-5 md:py-4 flex flex-col gap-3">
+
+        {/* ── TOP BAR ── */}
+        <div className="shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rpg-border bg-[#faf4eb] px-4 py-3">
+          <div className="flex items-center gap-3">
+            <HeartPulse className="w-5 h-5 text-red-600 heartbeat" />
+            <h1 className="font-pixel text-[11px] md:text-[13px] text-emerald-800 leading-relaxed">
+              {meta.title}
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <HpBar score={score} total={scoredDecisionIds.length} />
+            <button
+              onClick={reset}
+              className="rpg-border bg-[#faf4eb] hover:bg-emerald-50 px-3 py-1.5 font-pixel text-[8px] text-emerald-800 hover:text-emerald-700 transition-colors flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3 h-3" /> RESTART
+            </button>
+          </div>
+        </div>
+
+        {/* ── BREADCRUMB PATH ── */}
+        <div className="shrink-0 flex flex-wrap gap-1 rpg-border-cyan bg-[#f0f7fa] px-3 py-2">
+          {path.slice(-6).map((nodeId, index, arr) => (
+            <div
+              key={`${nodeId}-${index}`}
+              className={`px-2 py-0.5 font-pixel text-[7px] border-2 transition-all ${
+                index === arr.length - 1
+                  ? "bg-sky-100 border-sky-600/40 text-sky-800"
+                  : "bg-transparent border-amber-700/15 text-amber-800/50"
+              }`}
+            >
+              {index === arr.length - 1 ? "► " : "· "}{nodes[nodeId].title}
+            </div>
+          ))}
+        </div>
+
+        {/* ── MAIN GAME PANEL ── */}
+        <div className={`min-h-0 flex-1 overflow-hidden flex flex-col ${
+          currentNode.kind === "dead_end" ? "rpg-border-danger" : currentNode.kind === "success" ? "rpg-border-gold" : "rpg-border"
+        } bg-[#faf4eb]`}>
+
+          {/* Panel header */}
+          <div className={`shrink-0 border-b-2 px-4 py-2.5 md:px-5 ${headerTone[currentNode.kind]}`}>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`p-1.5 border-2 ${
+                  currentNode.kind === "dead_end" ? "border-red-600/40 text-red-700 bg-red-50" :
+                  currentNode.kind === "success" ? "border-amber-600/40 text-amber-700 bg-amber-50" :
+                  "border-sky-600/40 text-sky-700 bg-sky-50"
+                }`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  {stepNumber > 0 && (
+                    <div className="font-pixel text-[7px] text-amber-700/60 mb-0.5">
+                      FASE {stepNumber}/{scoredDecisionIds.length}
+                    </div>
+                  )}
+                  <h2 className={`font-pixel text-[10px] md:text-[11px] leading-relaxed ${
+                    currentNode.kind === "dead_end" ? "text-red-800" :
+                    currentNode.kind === "success" ? "text-amber-800" :
+                    "text-sky-800"
+                  }`}>
+                    {currentNode.title}
+                  </h2>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <KindBadge kind={currentNode.kind} />
+            </div>
+          </div>
 
-          <Card className="rounded-[28px] border-0 bg-white shadow-sm">
-            <CardContent className="p-4 md:p-5">
-              <div className="flex flex-wrap gap-2">
-                {path.slice(-6).map((nodeId, index, arr) => (
-                  <div
-                    key={`${nodeId}-${index}`}
-                    className={`rounded-full px-3 py-2 text-sm ${index === arr.length - 1 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
-                  >
-                    {nodes[nodeId].title}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Scrollable content */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5 space-y-4">
 
-          <Card className="rounded-[32px] border-0 bg-white shadow-sm overflow-hidden">
-            <div className={`border-b px-6 py-5 md:px-8 ${headerTone[currentNode.kind]}`}>
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-start gap-4 min-w-0">
-                  <div className="rounded-2xl bg-white p-3 shadow-sm border border-slate-200">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div className="min-w-0">
-                    {stepNumber > 0 && (
-                      <div className="text-sm text-slate-500 mb-1">Etapa {stepNumber} de {scoredDecisionIds.length}</div>
-                    )}
-                    <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">{currentNode.title}</h2>
+            {/* Scene + Lab Panel + Prompt */}
+            <div className={`grid gap-3 ${
+              currentNode.patientData
+                ? "lg:grid-cols-[1fr_0.7fr_0.8fr]"
+                : "lg:grid-cols-[1.1fr_0.9fr]"
+            }`}>
+              {/* Clinical scene */}
+              <div className="rpg-border bg-[#f5f0e5] p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Stethoscope className="w-3.5 h-3.5 text-emerald-700" />
+                  <div className="font-pixel text-[8px] text-emerald-700 uppercase tracking-widest">
+                    Situação clínica
                   </div>
                 </div>
-                <KindBadge kind={currentNode.kind} />
+                <div className="text-sm leading-7 text-[#3d2e1e] font-sans">
+                  {currentNode.scene}
+                </div>
+              </div>
+
+              {/* Lab panel — only when structured data exists */}
+              {currentNode.patientData && (
+                <LabPanel data={currentNode.patientData} />
+              )}
+
+              {/* Decision prompt */}
+              <div className="rpg-border-gold bg-[#fdf8ef] p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Swords className="w-3.5 h-3.5 text-amber-700" />
+                  <div className="font-pixel text-[8px] text-amber-700 uppercase tracking-widest">
+                    Próxima decisão
+                  </div>
+                </div>
+                <div className="text-base font-semibold leading-7 text-[#3d2e1e] font-sans rpg-cursor">
+                  {currentNode.prompt}
+                </div>
               </div>
             </div>
 
-            <CardContent className="p-6 md:p-8 space-y-8">
-              <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5 md:p-6">
-                  <div className="text-sm font-medium text-slate-500 mb-2">Situação clínica</div>
-                  <div className="text-base md:text-lg leading-8 text-slate-800">{currentNode.scene}</div>
-                </div>
+            {/* Options */}
+            <div className="grid gap-2">
+              {currentNode.options.map((option, idx) => {
+                const isSelected = selectedOptionId === option.id;
+                const showSuccess = revealed && option.id === selectedOptionId && option.isBest;
+                const showFailure = revealed && option.id === selectedOptionId && currentNode.kind === "decision" && !option.isBest;
 
-                <div className="rounded-3xl bg-white border border-slate-200 p-5 md:p-6">
-                  <div className="text-sm font-medium text-slate-500 mb-2">Próxima decisão</div>
-                  <div className="text-lg md:text-xl font-semibold leading-8 text-slate-900">{currentNode.prompt}</div>
-                </div>
-              </div>
+                const letter = String.fromCharCode(65 + idx);
 
-              <div className="grid gap-4">
-                {currentNode.options.map((option, idx) => {
-                  const isSelected = selectedOptionId === option.id;
-                  const showSuccess = revealed && option.id === selectedOptionId && option.isBest;
-                  const showFailure = revealed && option.id === selectedOptionId && currentNode.kind === "decision" && !option.isBest;
+                let borderClass = "border-2 border-amber-700/20 bg-[#faf4eb] hover:border-emerald-600/40 hover:bg-emerald-50/50";
+                if (isSelected && !revealed) borderClass = "border-2 border-sky-600 bg-sky-50 shadow-[0_2px_0_rgba(14,116,144,0.2)]";
+                if (showSuccess) borderClass = "border-2 border-emerald-600 bg-emerald-50 shadow-[0_2px_0_rgba(22,163,74,0.2)]";
+                if (showFailure) borderClass = "border-2 border-red-600 bg-red-50 shadow-[0_2px_0_rgba(185,28,28,0.2)]";
 
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => choose(option.id)}
-                      className={`group text-left rounded-3xl border px-5 py-5 transition-all ${
-                        isSelected ? "border-slate-900 bg-slate-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70"
-                      } ${showSuccess ? "ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50" : ""} ${showFailure ? "ring-2 ring-rose-500 border-rose-300 bg-rose-50" : ""}`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
-                            showSuccess
-                              ? "border-emerald-500 bg-emerald-100 text-emerald-700"
-                              : showFailure
-                              ? "border-rose-500 bg-rose-100 text-rose-700"
-                              : isSelected
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-300 bg-white text-slate-500 group-hover:border-slate-400"
-                          }`}
-                        >
-                          {showSuccess ? (
-                            <CheckCircle2 className="w-4 h-4" />
-                          ) : showFailure ? (
-                            <XCircle className="w-4 h-4" />
-                          ) : (
-                            String.fromCharCode(65 + idx)
-                          )}
-                        </div>
-                        <div className="text-base leading-7 text-slate-800">{option.label}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <div className="text-sm text-slate-500">
-                  {selectedOptionId ? "Resposta selecionada. Revele a consequência clínica antes de avançar." : "Escolha uma opção para continuar."}
-                  <span className="ml-2 text-slate-400 hidden sm:inline">· Use A/B/C e Enter</span>
-                </div>
-                <div className="flex gap-3 flex-wrap">
-                  <Button onClick={reveal} disabled={!selectedOptionId || revealed} className="rounded-2xl h-11 px-5">
-                    Revelar consequência
-                  </Button>
-                  <Button variant="outline" onClick={advance} disabled={!revealed || !selectedOption} className="rounded-2xl h-11 px-5">
-                    {selectedOption?.nextId === "success"
-                      ? "Fechar diagnóstico"
-                      : currentNode.kind === "dead_end"
-                      ? "Voltar para a árvore"
-                      : "Seguir caminho"}
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </div>
-              </div>
-
-              {revealed && selectedOption && (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Card className="rounded-3xl border-0 bg-slate-50 shadow-none">
-                    <CardContent className="p-6">
-                      <div className="text-sm font-medium text-slate-500 mb-2">Leitura da escolha</div>
-                      <div className="text-base leading-8 text-slate-800">{selectedOption.feedback}</div>
-                    </CardContent>
-                  </Card>
-                  <Card
-                    className={`rounded-3xl border-0 shadow-none ${
-                      selectedOption.nextId === "success"
-                        ? "bg-emerald-900 text-white"
-                        : nodes[selectedOption.nextId].kind === "dead_end"
-                        ? "bg-rose-900 text-white"
-                        : "bg-slate-900 text-white"
-                    }`}
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => choose(option.id)}
+                    className={`group text-left px-4 py-3 transition-all ${borderClass}`}
                   >
-                    <CardContent className="p-6">
-                      <div className="text-sm font-medium text-slate-300 mb-2">Para onde esse caminho leva</div>
-                      <div className="text-base leading-8 text-slate-100">{nodes[selectedOption.nextId].title}</div>
-                    </CardContent>
-                  </Card>
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center border-2 font-pixel text-[9px] ${
+                          showSuccess
+                            ? "border-emerald-600 bg-emerald-100 text-emerald-800"
+                            : showFailure
+                            ? "border-red-600 bg-red-100 text-red-800"
+                            : isSelected
+                            ? "border-sky-600 bg-sky-100 text-sky-800"
+                            : "border-amber-700/25 bg-amber-50 text-amber-800/60 group-hover:border-emerald-600/40 group-hover:text-emerald-700"
+                        }`}
+                      >
+                        {showSuccess ? (
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        ) : showFailure ? (
+                          <XCircle className="w-3.5 h-3.5" />
+                        ) : (
+                          letter
+                        )}
+                      </div>
+                      <div className={`text-sm leading-6 font-sans ${
+                        showSuccess ? "text-emerald-900" :
+                        showFailure ? "text-red-900" :
+                        isSelected ? "text-sky-900" :
+                        "text-[#3d2e1e]"
+                      }`}>
+                        {option.label}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Action bar */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end border-t-2 border-amber-700/10 pt-3">
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={reveal}
+                  disabled={!selectedOptionId || revealed}
+                  className="rpg-border bg-[#faf4eb] hover:bg-emerald-50 disabled:opacity-30 disabled:cursor-not-allowed px-4 py-1.5 font-pixel text-[8px] text-emerald-800 hover:text-emerald-700 transition-colors"
+                >
+                  ⚡ REVELAR
+                </button>
+                <button
+                  onClick={advance}
+                  disabled={!revealed || !selectedOption}
+                  className="rpg-border-gold bg-[#fdf8ef] hover:bg-amber-50 disabled:opacity-30 disabled:cursor-not-allowed px-4 py-1.5 font-pixel text-[8px] text-amber-800 hover:text-amber-700 transition-colors flex items-center gap-1"
+                >
+                  {selectedOption?.nextId === "success"
+                    ? "🏆 FECHAR"
+                    : currentNode.kind === "dead_end"
+                    ? "↩ VOLTAR"
+                    : "▶ SEGUIR"}
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* Revealed feedback */}
+            {revealed && selectedOption && (
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className={`p-4 ${selectedOption.isBest ? "rpg-border bg-emerald-50/80" : "rpg-border-danger bg-red-50/80"}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {selectedOption.isBest ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5 text-red-700" />
+                    )}
+                    <div className={`font-pixel text-[7px] uppercase tracking-widest ${
+                      selectedOption.isBest ? "text-emerald-700" : "text-red-700"
+                    }`}>
+                      {selectedOption.isBest ? "Escolha correta!" : "Escolha inadequada"}
+                    </div>
+                  </div>
+                  <div className={`text-sm leading-7 font-sans ${
+                    selectedOption.isBest ? "text-emerald-950" : "text-red-950"
+                  }`}>
+                    {selectedOption.feedback}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                <div className={`p-4 ${
+                  selectedOption.nextId === "success"
+                    ? "rpg-border-gold bg-amber-50/80"
+                    : nodes[selectedOption.nextId].kind === "dead_end"
+                    ? "rpg-border-danger bg-red-50/80"
+                    : "rpg-border-cyan bg-sky-50/80"
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <ChevronRight className={`w-3.5 h-3.5 ${
+                      selectedOption.nextId === "success" ? "text-amber-700" :
+                      nodes[selectedOption.nextId].kind === "dead_end" ? "text-red-700" :
+                      "text-sky-700"
+                    }`} />
+                    <div className={`font-pixel text-[7px] uppercase tracking-widest ${
+                      selectedOption.nextId === "success" ? "text-amber-700" :
+                      nodes[selectedOption.nextId].kind === "dead_end" ? "text-red-700" :
+                      "text-sky-700"
+                    }`}>
+                      Próximo destino
+                    </div>
+                  </div>
+                  <div className={`text-sm leading-7 font-sans ${
+                    selectedOption.nextId === "success" ? "text-amber-950" :
+                    nodes[selectedOption.nextId].kind === "dead_end" ? "text-red-950" :
+                    "text-sky-950"
+                  }`}>
+                    {nodes[selectedOption.nextId].title}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

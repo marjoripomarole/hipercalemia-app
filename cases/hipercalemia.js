@@ -15,7 +15,14 @@ const hipercalemiaCase = {
       title: "Pronto atendimento: começo do caso",
       icon: "Stethoscope",
       scene:
-        "Paciente de 68 anos, com diabetes, DRC (doença renal crônica, ou seja, perda persistente da função dos rins) e hipertensão, chega ao pronto atendimento com fraqueza muscular, náuseas e palpitações. Usa losartana e espironolactona. Está consciente, PA 138/84 mmHg, FC 96 bpm.",
+        "Paciente chega ao pronto atendimento com fraqueza muscular, náuseas e palpitações. Está consciente e estável hemodinamicamente.",
+      patientData: {
+        paciente: { Idade: "68 anos", Sexo: "Masculino" },
+        história: { DM2: "Sim", HAS: "Sim", DRC: "Sim (perda persistente da função renal)" },
+        medicações: { Losartana: "Em uso", Espironolactona: "Em uso" },
+        sinaisVitais: { PA: "138/84 mmHg", FC: "96 bpm", Estado: "Consciente" },
+        laboratório: { "K⁺": { valor: "6,8 mEq/L", alerta: "alto" } },
+      },
       prompt: "Qual é o melhor primeiro passo?",
       options: [
         {
@@ -86,7 +93,19 @@ const hipercalemiaCase = {
       title: "A pista principal",
       icon: "HeartPulse",
       scene:
-        "Você monitora o paciente, repete o exame e recebe os dados: K⁺ 6,7 mEq/L, creatinina 2,6 mg/dL, ureia elevada. A amostra não estava hemolisada. O ECG mostra ondas T apiculadas e início de alargamento do QRS.",
+        "Você monitora o paciente, repete o exame e recebe os novos dados. A amostra não estava hemolisada. O ECG mostra ondas T apiculadas e início de alargamento do QRS.",
+      patientData: {
+        laboratório: {
+          "K⁺ (repetido)": { valor: "6,7 mEq/L", alerta: "alto" },
+          Creatinina: { valor: "2,6 mg/dL", alerta: "alto" },
+          Ureia: { valor: "Elevada", alerta: "alto" },
+          Hemólise: { valor: "Ausente", alerta: "normal" },
+        },
+        ecg: {
+          "Ondas T": { valor: "Apiculadas", alerta: "alto" },
+          QRS: { valor: "Início de alargamento", alerta: "alto" },
+        },
+      },
       prompt: "Como classificar esse caso agora?",
       options: [
         {
