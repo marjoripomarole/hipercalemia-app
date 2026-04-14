@@ -17,6 +17,8 @@ import {
   Swords,
   ClipboardList,
   FileHeart,
+  BookOpen,
+  GraduationCap,
 } from "lucide-react";
 
 const ICONS = {
@@ -119,18 +121,26 @@ function LabPanel({ data }) {
                   const isStructured = typeof value === "object" && value.valor;
                   const displayValue = isStructured ? value.valor : value;
                   const alert = isStructured ? value.alerta : null;
+                  const referencia = isStructured ? value.referencia : null;
 
                   return (
-                    <div key={key} className="flex items-center justify-between gap-2 px-1.5 py-0.5 text-xs font-sans">
-                      <span className="text-[#3d2e1e]/70 shrink-0">{key}</span>
-                      <span className={`text-right font-medium ${
-                        alert === "alto" ? "text-red-700" :
-                        alert === "normal" ? "text-emerald-700" :
-                        "text-[#3d2e1e]"
-                      }`}>
-                        {alert === "alto" && "⚠ "}
-                        {displayValue}
-                      </span>
+                    <div key={key} className="px-1.5 py-0.5 text-xs font-sans">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[#3d2e1e]/70 shrink-0">{key}</span>
+                        <span className={`text-right font-medium ${
+                          alert === "alto" ? "text-red-700" :
+                          alert === "normal" ? "text-emerald-700" :
+                          "text-[#3d2e1e]"
+                        }`}>
+                          {alert === "alto" && "⚠ "}
+                          {displayValue}
+                        </span>
+                      </div>
+                      {referencia && (
+                        <div className="text-[10px] text-[#3d2e1e]/40 text-right mt-0.5 italic">
+                          ref: {referencia}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -138,6 +148,71 @@ function LabPanel({ data }) {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function TeachingNote({ note }) {
+  const [open, setOpen] = useState(false);
+  if (!note) return null;
+
+  return (
+    <div className="rpg-border bg-[#faf6ef] p-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-amber-50/50 transition-colors"
+      >
+        <GraduationCap className="w-4 h-4 text-amber-700 shrink-0" />
+        <span className="font-pixel text-[8px] text-amber-700 uppercase tracking-widest">
+          Nota do Professor
+        </span>
+        <span className="ml-auto font-pixel text-[8px] text-amber-600/60">
+          {open ? "▲ FECHAR" : "▼ ABRIR"}
+        </span>
+      </button>
+      {open && (
+        <div className="px-4 pb-3 border-t border-amber-700/10">
+          <div className="mt-2.5 text-sm leading-7 text-amber-900/80 font-sans">
+            <BookOpen className="w-3.5 h-3.5 inline mr-1.5 mb-0.5 text-amber-600" />
+            {note}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SummaryPanel({ summary }) {
+  if (!summary) return null;
+
+  return (
+    <div className="rpg-border-gold bg-gradient-to-br from-amber-50 to-[#fdf8ef] p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <GraduationCap className="w-4 h-4 text-amber-700" />
+        <div className="font-pixel text-[9px] text-amber-800 uppercase tracking-widest">
+          {summary.title}
+        </div>
+      </div>
+      <div className="grid gap-2.5">
+        {summary.steps.map((step) => (
+          <div
+            key={step.letter}
+            className="flex gap-3 items-start bg-white/60 border-2 border-amber-700/15 p-3"
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-amber-600/40 bg-amber-100 font-pixel text-[12px] text-amber-800">
+              {step.letter}
+            </div>
+            <div>
+              <div className="font-pixel text-[9px] text-amber-800 mb-0.5">
+                {step.word}
+              </div>
+              <div className="text-xs leading-6 text-[#3d2e1e]/80 font-sans">
+                {step.detail}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -371,6 +446,14 @@ export default function GameEngine({ caseData }) {
                 </div>
               </div>
             </div>
+
+            {/* Teaching note — professor explanation */}
+            <TeachingNote note={currentNode.teachingNote} />
+
+            {/* Summary panel — shown on success screen */}
+            {currentNode.kind === "success" && currentNode.summary && (
+              <SummaryPanel summary={currentNode.summary} />
+            )}
 
             {/* Options */}
             <div className="grid gap-2">

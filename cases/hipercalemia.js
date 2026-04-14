@@ -7,7 +7,7 @@ const hipercalemiaCase = {
       "Agora o caso funciona como uma árvore de decisão: escolhas erradas continuam o jogo, mas levam a consequências clínicas e becos sem saída.",
   },
   initialNodeId: "start",
-  scoredDecisionIds: ["start", "severity", "stabilize", "shift", "cause"],
+  scoredDecisionIds: ["start", "severity", "stabilize", "shift", "eliminate", "cause"],
   nodes: {
     start: {
       id: "start",
@@ -21,7 +21,9 @@ const hipercalemiaCase = {
         história: { DM2: "Sim", HAS: "Sim", DRC: "Sim (perda persistente da função renal)" },
         medicações: { Losartana: "Em uso", Espironolactona: "Em uso" },
         sinaisVitais: { PA: "138/84 mmHg", FC: "96 bpm", Estado: "Consciente" },
-        laboratório: { "K⁺": { valor: "6,8 mEq/L", alerta: "alto" } },
+        laboratório: {
+          "K⁺": { valor: "6,8 mEq/L", alerta: "alto", referencia: "3,5 – 5,0 mEq/L" },
+        },
       },
       prompt: "Qual é o melhor primeiro passo?",
       options: [
@@ -39,7 +41,7 @@ const hipercalemiaCase = {
           isBest: true,
           nextId: "severity",
           feedback:
-            "Esse é o melhor primeiro passo. Você combina confirmação diagnóstica com avaliação imediata de gravidade.",
+            "Esse é o melhor primeiro passo. Você combina confirmação diagnóstica com avaliação imediata de gravidade. O ECG é a ferramenta mais rápida para detectar repercussão cardíaca da hipercalemia.",
         },
         {
           id: "c",
@@ -94,16 +96,22 @@ const hipercalemiaCase = {
       icon: "HeartPulse",
       scene:
         "Você monitora o paciente, repete o exame e recebe os novos dados. A amostra não estava hemolisada. O ECG mostra ondas T apiculadas e início de alargamento do QRS.",
+      teachingNote:
+        "Progressão típica no ECG da hipercalemia: ondas T apiculadas → achatamento da onda P → alargamento do QRS → onda sinusoidal → fibrilação ventricular / assistolia. Cada passo é mais perigoso que o anterior.",
       patientData: {
         laboratório: {
-          "K⁺ (repetido)": { valor: "6,7 mEq/L", alerta: "alto" },
-          Creatinina: { valor: "2,6 mg/dL", alerta: "alto" },
-          Ureia: { valor: "Elevada", alerta: "alto" },
+          "K⁺ (repetido)": { valor: "6,7 mEq/L", alerta: "alto", referencia: "3,5 – 5,0 mEq/L" },
+          Creatinina: { valor: "2,6 mg/dL", alerta: "alto", referencia: "0,7 – 1,3 mg/dL" },
+          "TFGe (CKD-EPI)": { valor: "~22 mL/min/1,73m²", alerta: "alto", referencia: "> 90 mL/min" },
+          Ureia: { valor: "128 mg/dL", alerta: "alto", referencia: "15 – 40 mg/dL" },
+          "pH arterial": { valor: "7,31", alerta: "alto", referencia: "7,35 – 7,45" },
+          "HCO₃⁻": { valor: "18 mEq/L", alerta: "alto", referencia: "22 – 26 mEq/L" },
           Hemólise: { valor: "Ausente", alerta: "normal" },
         },
         ecg: {
-          "Ondas T": { valor: "Apiculadas", alerta: "alto" },
-          QRS: { valor: "Início de alargamento", alerta: "alto" },
+          "Ondas T": { valor: "Apiculadas (simétricas, em V2-V6)", alerta: "alto" },
+          QRS: { valor: "Início de alargamento (~130 ms)", alerta: "alto" },
+          "Onda P": { valor: "Achatada", alerta: "alto" },
         },
       },
       prompt: "Como classificar esse caso agora?",
@@ -114,7 +122,7 @@ const hipercalemiaCase = {
           isBest: true,
           nextId: "stabilize",
           feedback:
-            "Perfeito. Agora já não é apenas um potássio alto no papel: existe repercussão elétrica e risco de arritmia.",
+            "Perfeito. K⁺ > 6,0 mEq/L com alterações no ECG define hipercalemia grave com repercussão cardíaca. Note também a acidose metabólica (pH 7,31, HCO₃⁻ 18) — a acidose desloca K⁺ para fora da célula, piorando o quadro. Existe risco real de arritmia.",
         },
         {
           id: "b",
@@ -122,7 +130,7 @@ const hipercalemiaCase = {
           isBest: false,
           nextId: "dead_pseudo",
           feedback:
-            "Isso ignora dois dados fortes: a amostra não estava hemolisada e o ECG já está alterado.",
+            "Isso ignora dois dados fortes: a amostra não estava hemolisada e o ECG já está alterado. Pseudohipercalemia ocorre quando há hemólise, leucocitose extrema ou trombocitose — nenhuma presente aqui.",
         },
         {
           id: "c",
@@ -130,7 +138,7 @@ const hipercalemiaCase = {
           isBest: false,
           nextId: "dead_neuro",
           feedback:
-            "Fraqueza muscular existe, mas o ponto crítico do caso é a repercussão cardíaca.",
+            "Fraqueza muscular existe, mas o ponto crítico do caso é a repercussão cardíaca. O ECG nunca é \"secundário\" na hipercalemia — ele determina a urgência.",
         },
       ],
     },
@@ -176,24 +184,26 @@ const hipercalemiaCase = {
       title: "Primeira decisão terapêutica",
       icon: "Activity",
       scene:
-        "Você já reconheceu uma hipercalemia com alterações no ECG. Agora precisa escolher a intervenção inicial que mais reduz o risco imediato de morte.",
+        "Você já reconheceu uma hipercalemia com alterações no ECG. Agora precisa escolher a intervenção inicial que mais reduz o risco imediato de morte. Lembre-se: o monitor cardíaco deve permanecer ligado continuamente.",
+      teachingNote:
+        "O gluconato de cálcio NÃO reduz o potássio sérico. Ele age elevando o potencial limiar dos cardiomiócitos, tornando o miocárdio menos excitável e mais resistente aos efeitos arritmogênicos do K⁺. O efeito começa em 1-3 minutos e dura 30-60 minutos.",
       prompt: "Qual é a melhor primeira medida?",
       options: [
         {
           id: "a",
-          label: "Gluconato de cálcio EV",
+          label: "Gluconato de cálcio 10% EV (10 mL em 2-3 minutos)",
           isBest: true,
           nextId: "shift",
           feedback:
-            "Correto. O cálcio não baixa o potássio, mas estabiliza a membrana miocárdica e compra tempo.",
+            "Correto. O cálcio não baixa o potássio, mas estabiliza a membrana miocárdica ao elevar o potencial limiar dos cardiomiócitos, reduzindo a excitabilidade cardíaca. Dose: 10 mL de gluconato de cálcio 10% EV em 2-3 min. Pode repetir em 5-10 min se as alterações no ECG persistirem.",
         },
         {
           id: "b",
-          label: "Restringir alimentos ricos em potássio",
+          label: "Insulina regular 10 UI + glicose 50% 50 mL EV antes de qualquer outra medida",
           isBest: false,
-          nextId: "dead_diet",
+          nextId: "dead_sequence",
           feedback:
-            "Dieta é assunto posterior. Neste momento, ela não protege o paciente do risco arrítmico agudo.",
+            "Insulina + glicose é uma medida correta para deslocar K⁺ para dentro da célula, mas não é a PRIMEIRA medida. Antes de baixar o potássio, você precisa proteger o coração. E se ocorrer uma arritmia nesses primeiros minutos?",
         },
         {
           id: "c",
@@ -201,25 +211,25 @@ const hipercalemiaCase = {
           isBest: false,
           nextId: "dead_wait_specialist",
           feedback:
-            "Esperar ajuda especializada sem iniciar a estabilização imediata pode ser perigoso.",
+            "Esperar ajuda especializada sem iniciar a estabilização imediata pode ser perigoso. Você deve iniciar o tratamento E chamar a nefrologia simultaneamente para avaliar necessidade de hemodiálise.",
         },
       ],
     },
-    dead_diet: {
-      id: "dead_diet",
+    dead_sequence: {
+      id: "dead_sequence",
       kind: "dead_end",
-      title: "Beco sem saída: conduta certa, hora errada",
+      title: "Beco sem saída: sequência invertida",
       icon: "AlertTriangle",
       scene:
-        "A nutricionista é acionada. O cardápio sem banana está sendo preparado. Enquanto isso, o monitor apita — o coração não recebeu nenhuma proteção. A dieta é importante, mas não salva ninguém em fibrilação ventricular.",
-      prompt: "Como corrigir a prioridade?",
+        "A insulina é prescrita. A farmácia prepara. A enfermeira administra. Tudo certo — exceto a ordem. Enquanto o K⁺ lentamente começa a migrar para dentro das células (efeito em 15-30 min), o coração continua desprotegido. O QRS alarga mais um pouco. O ECG dispara alarme. Se o cálcio tivesse vindo primeiro, o coração estaria protegido nesses minutos críticos.",
+      prompt: "Qual deveria ser a primeira medida?",
       options: [
         {
           id: "back",
-          label: "Voltar e proteger o miocárdio imediatamente",
+          label: "Voltar e proteger o miocárdio ANTES de deslocar potássio",
           nextId: "stabilize",
           feedback:
-            "Na hipercalemia com ECG alterado, a primeira tarefa é estabilizar o coração.",
+            "Na hipercalemia com ECG alterado, a sequência é: primeiro ESTABILIZAR (cálcio), depois DESLOCAR (insulina + glicose).",
         },
       ],
     },
@@ -237,7 +247,7 @@ const hipercalemiaCase = {
           label: "Voltar e administrar cálcio EV para estabilização cardíaca",
           nextId: "stabilize",
           feedback:
-            "O primeiro passo terapêutico precisa acontecer ali, à beira-leito.",
+            "O primeiro passo terapêutico precisa acontecer ali, à beira-leito. Inicie o tratamento E chame a nefrologia ao mesmo tempo — nunca um em vez do outro.",
         },
       ],
     },
@@ -247,68 +257,143 @@ const hipercalemiaCase = {
       title: "Baixar rápido o potássio",
       icon: "FlaskConical",
       scene:
-        "Após o cálcio EV, o coração está mais protegido, mas o K⁺ continua alto. Agora é hora de reduzir rapidamente o potássio sérico nas próximas horas.",
+        "Após o cálcio EV, o coração está mais protegido, mas o K⁺ continua alto. Agora é hora de deslocar o potássio do sangue para dentro das células, reduzindo o K⁺ sérico nas próximas 1-2 horas.",
+      teachingNote:
+        "A insulina ativa a bomba Na⁺/K⁺-ATPase nas células musculares e hepáticas, empurrando K⁺ para dentro da célula. O efeito começa em 15-30 min e reduz o K⁺ em ~0,5-1,2 mEq/L. O salbutamol nebulizado (β2-agonista) tem efeito semelhante via outro mecanismo (ativação de AMPc → estímulo da Na⁺/K⁺-ATPase).",
       prompt: "Qual opção faz mais sentido agora?",
       options: [
         {
           id: "a",
-          label: "Insulina com glicose e considerar beta-2 agonista inalatório",
+          label: "Insulina regular 10 UI + glicose 50% (50 mL) EV, associada a salbutamol nebulizado (10-20 mg)",
           isBest: true,
-          nextId: "cause",
+          nextId: "eliminate",
           feedback:
-            "Correto. Essas medidas deslocam o potássio para dentro da célula e reduzem o K⁺ sérico rapidamente.",
+            "Correto. A insulina ativa a bomba Na⁺/K⁺-ATPase, deslocando K⁺ para dentro das células (efeito em 15-30 min, reduz K⁺ em ~0,5-1,2 mEq/L). O salbutamol nebulizado tem efeito aditivo. ⚠️ ATENÇÃO: monitorize a glicemia capilar a cada 1-2h por pelo menos 6h — hipoglicemia é uma complicação frequente e perigosa dessa combinação.",
         },
         {
           id: "b",
-          label: "Começar apenas antibiótico e observar",
+          label: "Bicarbonato de sódio 8,4% EV isoladamente como medida principal",
           isBest: false,
-          nextId: "dead_antibiotic",
+          nextId: "dead_bicarb",
           feedback:
-            "Não há foco infeccioso como prioridade, e isso não trata a hipercalemia.",
+            "O bicarbonato de sódio tem papel controverso na hipercalemia. Pode ajudar se houver acidose metabólica grave (pH < 7,20), mas como medida ISOLADA para shift de K⁺, sua eficácia é inconsistente e muito mais lenta que insulina + β2-agonista. Não deve ser a medida principal.",
         },
         {
           id: "c",
-          label: "Dar soro fisiológico sem outro plano",
+          label: "Furosemida EV em dose alta para eliminar o potássio na urina",
           isBest: false,
-          nextId: "dead_saline",
+          nextId: "dead_furosemide_early",
           feedback:
-            "Volume isolado não resolve o problema principal e não reduz o potássio com a velocidade necessária.",
+            "Furosemida promove a excreção renal de K⁺ (eliminação), mas esse paciente tem uma taxa de filtração glomerular estimada (TFGe) de ~22 mL/min — a resposta ao diurético será limitada. Além disso, essa é uma medida de ELIMINAÇÃO, não de SHIFT. Neste momento, precisamos de algo que mova K⁺ para dentro das células rapidamente.",
         },
       ],
     },
-    dead_antibiotic: {
-      id: "dead_antibiotic",
+    dead_bicarb: {
+      id: "dead_bicarb",
       kind: "dead_end",
-      title: "Beco sem saída: você tratou outro problema",
+      title: "Beco sem saída: medida fraca como protagonista",
       icon: "AlertTriangle",
       scene:
-        "Amoxicilina prescrita. O farmacêutico dispensa. O soro com antibiótico começa a correr. O K⁺ continua em 6,7. O monitor apita. O residente pergunta: \"Mas cadê o foco infeccioso?\" Não tinha. E o potássio não caiu um milímetro.",
-      prompt: "Qual era a meta fisiológica correta?",
+        "O bicarbonato é prescrito. Uma hora depois, o K⁺ de controle volta: 6,5 mEq/L. Quase nada mudou. O attending suspira: \"Bicarbonato isolado? Em que guideline você viu isso funcionar rápido?\" O paciente precisava de insulina — e não recebeu.",
+      prompt: "Qual seria a medida de shift mais eficaz?",
       options: [
         {
           id: "back",
-          label: "Voltar e usar medidas que desloquem K⁺ para dentro da célula",
+          label: "Voltar e usar insulina + glicose com β2-agonista como medidas de shift",
           nextId: "shift",
           feedback:
-            "Nesta etapa, a prioridade é baixar o K⁺ sérico rapidamente.",
+            "Para deslocar K⁺ para dentro das células, insulina + glicose é a medida de primeira linha, com β2-agonista como adjuvante.",
         },
       ],
     },
-    dead_saline: {
-      id: "dead_saline",
+    dead_furosemide_early: {
+      id: "dead_furosemide_early",
       kind: "dead_end",
-      title: "Beco sem saída: suporte sem estratégia",
+      title: "Beco sem saída: certo conceito, fase errada",
       icon: "AlertTriangle",
       scene:
-        "O soro fisiológico pinga. Pinga. Pinga. O K⁺ continua em 6,7. O monitor apita de novo. \"Tá hidratado, pelo menos\", alguém murmura. O coração discorda — e mostra isso com mais um alargamento do QRS.",
-      prompt: "Como voltar ao objetivo certo?",
+        "A furosemida corre EV. Passam-se 2 horas. O débito urinário aumentou um pouco, mas o K⁺ de controle voltou: 6,4 mEq/L. Com uma taxa de filtração glomerular estimada (TFGe) de 22 mL/min, o rim mal consegue responder. Enquanto isso, as medidas de shift — que poderiam ter agido em 30 minutos — não foram prescritas.",
+      prompt: "Qual era o objetivo nesta fase?",
       options: [
         {
           id: "back",
-          label: "Voltar e escolher terapia que reduza o potássio sérico rapidamente",
+          label: "Voltar e usar medidas que desloquem K⁺ para dentro das células primeiro",
           nextId: "shift",
           feedback:
-            "Você precisa de uma medida com efeito rápido sobre o K⁺ circulante.",
+            "A furosemida é útil na fase de ELIMINAÇÃO, mas o passo atual exige SHIFT rápido. A sequência importa: Estabilizar → Deslocar → Eliminar.",
+        },
+      ],
+    },
+    eliminate: {
+      id: "eliminate",
+      kind: "decision",
+      title: "Tirando o potássio do corpo",
+      icon: "FlaskConical",
+      scene:
+        "O cálcio protegeu o coração. A insulina + glicose e o salbutamol estão deslocando K⁺ para dentro das células. Mas essas medidas são temporárias — o potássio vai voltar ao sangue nas próximas horas. Agora você precisa ELIMINAR o potássio do corpo de forma definitiva. Lembre-se: a taxa de filtração glomerular estimada (TFGe) é de ~22 mL/min e monitorização de glicemia capilar a cada 1-2h já está prescrita.",
+      teachingNote:
+        "As medidas de shift (insulina, β2-agonista) são temporárias — duram 4-6h. Se você não eliminar o K⁺ do corpo, ele retorna ao sangue. As vias de eliminação são: renal (diuréticos — limitada na DRC), gastrointestinal (resinas trocadoras como poliestirenossulfonato de sódio, patiromer, ou ciclossilicato de zircônio) e extracorpórea (hemodiálise — a mais eficaz).",
+      prompt: "Qual é a melhor estratégia de eliminação neste paciente?",
+      options: [
+        {
+          id: "a",
+          label: "Avaliar indicação de hemodiálise de urgência (DRC com TFGe ~22 mL/min) e associar resina trocadora de K⁺ enquanto aguarda",
+          isBest: true,
+          nextId: "cause",
+          feedback:
+            "Correto. Com uma TFGe (taxa de filtração glomerular estimada) de ~22 mL/min, a capacidade renal de excretar K⁺ é muito limitada. A hemodiálise é o método mais eficaz e rápido para remover K⁺ do corpo em pacientes com DRC avançada. Enquanto se organiza a diálise, a resina trocadora de K⁺ (poliestirenossulfonato ou patiromer) pode ajudar pela via gastrointestinal. Furosemida pode ser tentada como adjuvante, mas a resposta será limitada.",
+        },
+        {
+          id: "b",
+          label: "O K⁺ já entrou nas células — não precisa de mais nada, basta observar e repetir exames amanhã",
+          isBest: false,
+          nextId: "dead_observe",
+          feedback:
+            "As medidas de shift são TEMPORÁRIAS (duram 4-6 horas). O K⁺ que entrou nas células vai voltar ao sangue. Sem eliminação definitiva, a hipercalemia vai recorrer — possivelmente de madrugada, quando a equipe está reduzida.",
+        },
+        {
+          id: "c",
+          label: "Mais insulina + glicose em doses repetidas como estratégia principal, sem eliminar K⁺ do corpo",
+          isBest: false,
+          nextId: "dead_repeat_shift",
+          feedback:
+            "Repetir medidas de shift sem eliminar o K⁺ do corpo é como esvaziar um barco furado com um balde — funciona momentaneamente, mas o potássio vai voltar. Além disso, doses repetidas de insulina aumentam muito o risco de hipoglicemia grave.",
+        },
+      ],
+    },
+    dead_observe: {
+      id: "dead_observe",
+      kind: "dead_end",
+      title: "Beco sem saída: falsa segurança",
+      icon: "AlertTriangle",
+      scene:
+        "\"K⁺ de controle: 5,8. Melhorou!\" A equipe comemora. O plantão vira noite. Às 3h da manhã, o alarme do monitor dispara — K⁺ 6,9 mEq/L. O efeito da insulina acabou e o potássio voltou ao sangue. O paciente estava sem resina, sem diálise, sem nada. O plantonista noturno pergunta: \"Quem mandou não eliminar?\"",
+      prompt: "O que estava faltando no plano?",
+      options: [
+        {
+          id: "back",
+          label: "Voltar e usar medidas de eliminação definitiva (hemodiálise, resinas)",
+          nextId: "eliminate",
+          feedback:
+            "Shift sem eliminação é medida temporária. O K⁺ SEMPRE volta. A eliminação completa o tratamento.",
+        },
+      ],
+    },
+    dead_repeat_shift: {
+      id: "dead_repeat_shift",
+      kind: "dead_end",
+      title: "Beco sem saída: mais insulina, mais risco",
+      icon: "AlertTriangle",
+      scene:
+        "Terceira dose de insulina prescrita. Glicemia capilar: 42 mg/dL. O paciente começa a suar frio, tremer e ficar confuso. A hipoglicemia iatrogênica chegou antes do controle definitivo do K⁺. A enfermeira administra glicose de resgate enquanto o K⁺ continua oscilando. O attending aparece: \"Isso não é tratamento — é enxugar gelo.\"",
+      prompt: "Qual era a estratégia correta?",
+      options: [
+        {
+          id: "back",
+          label: "Voltar e associar medidas de eliminação definitiva ao plano",
+          nextId: "eliminate",
+          feedback:
+            "A estratégia correta após o shift é a ELIMINAÇÃO: hemodiálise (a mais eficaz na DRC), resinas trocadoras de K⁺, e diuréticos de alça como adjuvantes.",
         },
       ],
     },
@@ -318,16 +403,18 @@ const hipercalemiaCase = {
       title: "Fechando o diagnóstico",
       icon: "BrainCircuit",
       scene:
-        "O paciente melhora parcialmente após as medidas iniciais. Agora falta integrar causa, diagnóstico e mecanismo fisiopatológico principal.",
+        "O paciente melhora parcialmente após as medidas iniciais. A nefrologia está avaliando a indicação de diálise. Agora falta integrar causa, diagnóstico e mecanismo fisiopatológico principal.",
+      teachingNote:
+        "Mecanismo-chave: a Losartana bloqueia o receptor AT1 da angiotensina II → menor estímulo para liberação de aldosterona. A Espironolactona bloqueia diretamente o receptor de aldosterona no ducto coletor. Resultado combinado: o ducto coletor não secreta K⁺ adequadamente. Some isso à DRC (menos néfrons funcionantes para excretar K⁺) e você tem a tempestade perfeita.",
       prompt: "Qual diagnóstico integra melhor esse caso?",
       options: [
         {
           id: "a",
-          label: "Hipercalemia grave verdadeira por menor excreção renal de K⁺ na DRC, agravada por losartana e espironolactona, com repercussão cardíaca",
+          label: "Hipercalemia grave verdadeira por menor excreção renal de K⁺ na DRC, agravada por duplo bloqueio do SRAA (losartana + espironolactona), com repercussão cardíaca e acidose metabólica",
           isBest: true,
           nextId: "success",
           feedback:
-            "Exatamente. O caso combina retenção de potássio por disfunção renal com medicamentos que reduzem sua excreção, além de ECG compatível.",
+            "Exatamente. O caso combina: (1) retenção de K⁺ por disfunção renal (TFGe ~22 mL/min), (2) duplo bloqueio do SRAA — losartana reduz aldosterona via bloqueio de AT1, e espironolactona bloqueia o receptor mineralocorticoide no ducto coletor, ambos reduzindo a excreção de K⁺, (3) acidose metabólica que desloca K⁺ para fora das células, e (4) ECG com repercussão cardíaca confirmando gravidade.",
         },
         {
           id: "b",
@@ -335,7 +422,7 @@ const hipercalemiaCase = {
           isBest: false,
           nextId: "dead_final_pseudo",
           feedback:
-            "Isso contradiz o contexto todo: amostra sem hemólise, K⁺ elevado e alterações no ECG.",
+            "Isso contradiz o contexto todo: amostra sem hemólise, K⁺ elevado confirmado na repetição e alterações no ECG. Pseudohipercalemia requer causa identificável (hemólise, leucocitose extrema, torniquete prolongado).",
         },
         {
           id: "c",
@@ -343,7 +430,7 @@ const hipercalemiaCase = {
           isBest: false,
           nextId: "dead_final_diet",
           feedback:
-            "Dieta isolada raramente explica hipercalemia grave nesse contexto, ainda mais com DRC e medicamentos poupadores de potássio.",
+            "Dieta isolada raramente explica hipercalemia grave nesse contexto. A função renal NÃO é normal (TFGe ~22 mL/min), e há dois medicamentos que bloqueiam o SRAA. O mecanismo principal é retenção, não ingestão.",
         },
       ],
     },
@@ -379,17 +466,46 @@ const hipercalemiaCase = {
           label: "Voltar e priorizar a menor excreção renal de K⁺ como mecanismo central",
           nextId: "cause",
           feedback:
-            "O mecanismo principal aqui é retenção de potássio, não ingestão isolada.",
+            "O mecanismo principal aqui é retenção de potássio por DRC + bloqueio duplo do SRAA, não ingestão isolada.",
         },
       ],
     },
     success: {
       id: "success",
       kind: "success",
-      title: "Diagnóstico correto",
+      title: "Diagnóstico correto — caso encerrado!",
       icon: "CheckCircle2",
       scene:
-        "Vocês fecharam o caso. Trata-se de hipercalemia grave verdadeira, com repercussão cardíaca no ECG, em um paciente com DRC e uso de losartana + espironolactona, o que favorece retenção de potássio por menor excreção renal.",
+        "Vocês fecharam o caso. Trata-se de hipercalemia grave verdadeira, com repercussão cardíaca no ECG, em um paciente com DRC (taxa de filtração glomerular estimada ~22 mL/min) e uso de losartana + espironolactona (duplo bloqueio do SRAA), favorecendo retenção de potássio por menor excreção renal. A acidose metabólica concomitante agravava o quadro deslocando K⁺ para fora das células.",
+      summary: {
+        title: "📋 Revisão: Protocolo C-A-S-E da Hipercalemia",
+        steps: [
+          {
+            letter: "C",
+            word: "Cálcio",
+            detail:
+              "Gluconato de cálcio 10% EV — estabiliza a membrana cardíaca (não baixa o K⁺). Efeito em 1-3 min.",
+          },
+          {
+            letter: "A",
+            word: "Albuterol + Insulina",
+            detail:
+              "Insulina 10 UI + Glicose 50% + Salbutamol nebulizado — desloca K⁺ para dentro das células (shift). Efeito em 15-30 min. ⚠️ Monitorizar glicemia!",
+          },
+          {
+            letter: "S",
+            word: "Saída do K⁺",
+            detail:
+              "Hemodiálise (mais eficaz na DRC), resinas trocadoras (poliestirenossulfonato, patiromer), diuréticos de alça — remove K⁺ do corpo (eliminação definitiva).",
+          },
+          {
+            letter: "E",
+            word: "Etiologia",
+            detail:
+              "Investigar e tratar a causa: DRC + bloqueio do SRAA (losartana + espironolactona) → suspender medicações causadoras, ajustar doses, acompanhar com nefrologia.",
+          },
+        ],
+      },
       prompt: "O que vocês gostariam de fazer agora?",
       options: [
         {
