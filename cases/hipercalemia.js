@@ -33,11 +33,11 @@ const hipercalemiaCase = {
           isBest: false,
           nextId: "dead_wait",
           feedback:
-            "Pseudohipercalemia existe, mas essa escolha é incompleta. O paciente tem sintomas e fatores de risco; esperar sem ECG e sem monitorização é perigoso.",
+            "Pseudohipercalemia existe, mas essa escolha é incompleta. O paciente tem sintomas e fatores de risco; esperar sem ECG e sem monitoração é perigoso.",
         },
         {
           id: "b",
-          label: "Pedir ECG à beira-leito, repetir eletrólitos/função renal, revisar medicações e monitorizar o paciente",
+          label: "Pedir ECG à beira-leito, repetir eletrólitos/função renal, revisar medicações e monitorar o paciente",
           isBest: true,
           nextId: "severity",
           feedback:
@@ -64,7 +64,7 @@ const hipercalemiaCase = {
       options: [
         {
           id: "retry",
-          label: "Voltar e priorizar ECG, monitorização e confirmação laboratorial ao mesmo tempo",
+          label: "Voltar e priorizar ECG, monitoração e confirmação laboratorial ao mesmo tempo",
           nextId: "start",
           feedback:
             "Em hipercalemia suspeita, o raciocínio correto junta gravidade clínica e confirmação diagnóstica desde o início.",
@@ -82,7 +82,7 @@ const hipercalemiaCase = {
       options: [
         {
           id: "retry",
-          label: "Voltar e investigar gravidade primeiro, com ECG e monitorização",
+          label: "Voltar e investigar gravidade primeiro, com ECG e monitoração",
           nextId: "start",
           feedback:
             "Antes de discutir a causa final, você precisa saber se existe ameaça imediata ao coração.",
@@ -268,7 +268,7 @@ const hipercalemiaCase = {
           isBest: true,
           nextId: "eliminate",
           feedback:
-            "Correto. A insulina ativa a bomba Na⁺/K⁺-ATPase, deslocando K⁺ para dentro das células (efeito em 15-30 min, reduz K⁺ em ~0,5-1,2 mEq/L). O salbutamol nebulizado tem efeito aditivo. ⚠️ ATENÇÃO: monitorize a glicemia capilar a cada 1-2h por pelo menos 6h — hipoglicemia é uma complicação frequente e perigosa dessa combinação.",
+            "Correto. A insulina ativa a bomba Na⁺/K⁺-ATPase, deslocando K⁺ para dentro das células (efeito em 15-30 min, reduz K⁺ em ~0,5-1,2 mEq/L). O salbutamol nebulizado tem efeito aditivo. ⚠️ ATENÇÃO: monitore a glicemia capilar a cada 1-2h por pelo menos 6h — hipoglicemia é uma complicação frequente e perigosa dessa combinação.",
         },
         {
           id: "b",
@@ -330,7 +330,7 @@ const hipercalemiaCase = {
       title: "Tirando o potássio do corpo",
       icon: "FlaskConical",
       scene:
-        "O cálcio protegeu o coração. A insulina + glicose e o salbutamol estão deslocando K⁺ para dentro das células. Mas essas medidas são temporárias — o potássio vai voltar ao sangue nas próximas horas. Agora você precisa ELIMINAR o potássio do corpo de forma definitiva. Lembre-se: a taxa de filtração glomerular estimada (TFGe) é de ~22 mL/min e monitorização de glicemia capilar a cada 1-2h já está prescrita.",
+        "O cálcio protegeu o coração. A insulina + glicose e o salbutamol estão deslocando K⁺ para dentro das células. Mas essas medidas são temporárias — o potássio vai voltar ao sangue nas próximas horas. Agora você precisa ELIMINAR o potássio do corpo de forma definitiva. Lembre-se: a taxa de filtração glomerular estimada (TFGe) é de ~22 mL/min e monitoração de glicemia capilar a cada 1-2h já está prescrita.",
       teachingNote:
         "As medidas de shift (insulina, β2-agonista) são temporárias — duram 4-6h. Se você não eliminar o K⁺ do corpo, ele retorna ao sangue. As vias de eliminação são: renal (diuréticos — limitada na DRC), gastrointestinal (resinas trocadoras como poliestirenossulfonato de sódio, patiromer, ou ciclossilicato de zircônio) e extracorpórea (hemodiálise — a mais eficaz).",
       prompt: "Qual é a melhor estratégia de eliminação neste paciente?",
@@ -490,7 +490,7 @@ const hipercalemiaCase = {
             letter: "A",
             word: "Albuterol + Insulina",
             detail:
-              "Insulina 10 UI + Glicose 50% + Salbutamol nebulizado — desloca K⁺ para dentro das células (shift). Efeito em 15-30 min. ⚠️ Monitorizar glicemia!",
+              "Insulina 10 UI + Glicose 50% + Salbutamol nebulizado — desloca K⁺ para dentro das células (shift). Efeito em 15-30 min. ⚠️ Monitorar glicemia!",
           },
           {
             letter: "S",
