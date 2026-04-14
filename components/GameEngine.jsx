@@ -123,6 +123,14 @@ function LabPanel({ data }) {
                   const alert = isStructured ? value.alerta : null;
                   const referencia = isStructured ? value.referencia : null;
 
+                  if (key === "Imagem") {
+                    return (
+                      <div key={key} className="mt-2 mb-1 border-2 border-slate-300">
+                        <img src={displayValue} alt="ECG" className="w-full h-auto" />
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={key} className="px-1.5 py-0.5 text-xs font-sans">
                       <div className="flex items-center justify-between gap-2">

@@ -109,6 +109,7 @@ const hipercalemiaCase = {
           Hemólise: { valor: "Ausente", alerta: "normal" },
         },
         ecg: {
+          Imagem: "/ecg-hipercalemia.jpg",
           "Ondas T": { valor: "Apiculadas (simétricas, em V2-V6)", alerta: "alto" },
           QRS: { valor: "Início de alargamento (~130 ms)", alerta: "alto" },
           "Onda P": { valor: "Achatada", alerta: "alto" },
